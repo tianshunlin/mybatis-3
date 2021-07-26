@@ -45,20 +45,28 @@ import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * BaseExecutor 中主要提供了缓存管理和事务管理的基本功能，继承 BaseExecutor 的子类只要实现四个基本方法来完成数据库的相关操作即可
+ *
  * @author Clinton Begin
  */
 public abstract class BaseExecutor implements Executor {
 
   private static final Log log = LogFactory.getLog(BaseExecutor.class);
 
+  //事务对象
   protected Transaction transaction;
+  // 其中封装的Executor对象
   protected Executor wrapper;
 
+  // 延迟加载队列
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+  // 一级缓存，用于缓存该Executor对象查询结果集映射得到的结果对象
   protected PerpetualCache localCache;
+  // 一级缓存，用于缓存输出类型的参数
   protected PerpetualCache localOutputParameterCache;
   protected Configuration configuration;
 
+  // 记录嵌套查询的层数
   protected int queryStack;
   private boolean closed;
 
@@ -92,6 +100,7 @@ public abstract class BaseExecutor implements Executor {
       }
     } catch (SQLException e) {
       // Ignore. There's nothing that can be done at this point.
+      // 忽略。在这一点上没有什么可以做的
       log.warn("Unexpected exception on closing transaction.  Cause: " + e);
     } finally {
       transaction = null;
@@ -113,6 +122,7 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    // 执行update之前，先清理缓存
     clearLocalCache();
     return doUpdate(ms, parameter);
   }
