@@ -15,11 +15,19 @@
  */
 package org.apache.ibatis.reflection;
 
+/**
+ * 顾名思义，Reflector 的工厂模式
+ */
 public interface ReflectorFactory {
 
   boolean isClassCacheEnabled();
 
   void setClassCacheEnabled(boolean classCacheEnabled);
 
+  /**
+   * 通过 JavaBean 的 clazz 获取该 JavaBean 对应的 Reflector
+   * @param type
+   * @return
+   */
   Reflector findForClass(Class<?> type);
 }
