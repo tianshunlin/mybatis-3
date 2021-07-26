@@ -28,6 +28,8 @@ public class IntegerTypeHandler extends BaseTypeHandler<Integer> {
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Integer parameter, JdbcType jdbcType)
       throws SQLException {
+    // IntegerTypeHandler 就调用 PreparedStatement 的 setInt()方法
+    // BooleanTypeHandler 就调用 PreparedStatement 的 setBoolean()方法
     ps.setInt(i, parameter);
   }
 

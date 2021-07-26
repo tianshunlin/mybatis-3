@@ -49,14 +49,24 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * TypeHandlerRegistry 主要负责管理所有已知的 TypeHandler，Mybatis 在初始化过程中会为所有已知的
+ * TypeHandler 创建对象，并注册到 TypeHandlerRegistry
+ *
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
 public final class TypeHandlerRegistry {
 
+  /** 该集合主要用于从结果集读取数据时，将数据从 JDBC类型 转换成 Java类型 */
   private final Map<JdbcType, TypeHandler<?>>  jdbcTypeHandlerMap = new EnumMap<>(JdbcType.class);
+  /**
+   * 记录了 Java类型 向指定 JdbcType 转换时，需要使用的 TypeHandler对象。
+   * 如：String 可能转换成数据库的 char、varchar 等多种类型，所以存在一对多的关系
+   */
   private final Map<Type, Map<JdbcType, TypeHandler<?>>> typeHandlerMap = new ConcurrentHashMap<>();
   private final TypeHandler<Object> unknownTypeHandler;
+
+  /** key：TypeHandler 的类型；value：该 TypeHandler类型 对应的 TypeHandler对象 */
   private final Map<Class<?>, TypeHandler<?>> allTypeHandlersMap = new HashMap<>();
 
   private static final Map<JdbcType, TypeHandler<?>> NULL_TYPE_HANDLER_MAP = Collections.emptyMap();
@@ -72,6 +82,11 @@ public final class TypeHandlerRegistry {
 
   /**
    * The constructor that pass the MyBatis configuration.
+   *
+   * 除了注册 Mybatis 提供的 基本TypeHandler 外，我们也可以添加自定义的 TypeHandler
+   * 接口实现，在 mybatis-config.xml配置文件 中 <typeHandlers>节点 下添加相应的
+   * <typeHandlers>节点配置，并指定自定义的 TypeHandler实现类。Mybatis 在初始化时
+   * 会解析该节点，并将 TypeHandler类型 的对象注册到 TypeHandlerRegistry 中供 Mybatis 后续使用
    *
    * @param configuration a MyBatis configuration
    * @since 3.5.4
@@ -234,6 +249,10 @@ public final class TypeHandlerRegistry {
     if (ParamMap.class.equals(type)) {
       return null;
     }
+
+    // Java数据类型 与 JDBC数据类型 的关系往往是一对多，
+    // 所以一般会先根据 Java数据类型 获取 Map<JdbcType, TypeHandler<?>>对象
+    // 再根据 JDBC数据类型 获取对应的 TypeHandler对象
     Map<JdbcType, TypeHandler<?>> jdbcHandlerMap = getJdbcHandlerMap(type);
     TypeHandler<?> handler = null;
     if (jdbcHandlerMap != null) {

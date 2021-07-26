@@ -49,10 +49,19 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
   @Override
   public <T> T create(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
     Class<?> classToCreate = resolveInterface(type);
-    // we know types are assignable
+    // we know types are assignable  我们知道类型是可分配的
     return (T) instantiateClass(classToCreate, constructorArgTypes, constructorArgs);
   }
 
+  /**
+   * 通过反射来实例化给定的类，如果调用无参构造方法，则直接 constructor.newInstance()。如果有参，则根据参数类型和参数值进行调用
+   *
+   * @param type
+   * @param constructorArgTypes
+   * @param constructorArgs
+   * @param <T>
+   * @return
+   */
   private  <T> T instantiateClass(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
     try {
       Constructor<T> constructor;
